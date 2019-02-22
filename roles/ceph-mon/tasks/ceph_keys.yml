@@ -28,6 +28,14 @@
   when:
     - cephx
 
+- name: break1
+  stat:
+    path: /go_on1
+  register: stat_go_on
+  until: stat_go_on.exists
+  retry: 100000
+  delay: 1
+
 - block:
   - name: create ceph mgr keyring(s)
     ceph_key:
@@ -50,6 +58,14 @@
       - "{{ groups.get(mon_group_name, []) }}" # this honors the new rule where mgrs are always collocated with mons
     delegate_to: "{{ groups[mon_group_name][0] }}"
 
+  - name: break2
+    stat:
+      path: /go_on2
+    register: stat_go_on
+    until: stat_go_on.exists
+    retry: 100000
+    delay: 1
+
   - name: copy ceph mgr key(s) to the ansible server
     fetch:
       src: "{{ ceph_conf_key_directory }}/{{ cluster }}.mgr.{{ hostvars[item]['ansible_hostname'] }}.keyring"
@@ -62,6 +78,14 @@
   when:
     - cephx
     - not rolling_update
+
+  - name: break3
+    stat:
+      path: /go_on3
+    register: stat_go_on
+    until: stat_go_on.exists
+    retry: 100000
+    delay: 1
 
 - name: copy keys to the ansible server
   fetch:
